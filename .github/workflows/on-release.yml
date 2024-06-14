@@ -9,6 +9,8 @@ on:
     types:
       - released
 
+permissions: read-all
+
 env:
   ARTIFACTS_API_KEY: ${{ secrets.AZURE_ARTIFACTS_PERSONAL_ACCESS_TOKEN }}
   ARTIFACTS_FEED_URL: "https://pkgs.dev.azure.com/ed-fi-alliance/Ed-Fi-Alliance-OSS/_packaging/EdFi/nuget/v3/index.json"
@@ -20,6 +22,8 @@ jobs:
   delete-pre-releases:
     name: Delete Unnecessary Pre-Releases
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout the repo
         uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
@@ -53,25 +57,3 @@ jobs:
 
             $page += 1
           } While ($release_list.count -gt 0)
-
-  promote-Azure-artifact:
-    name: Promote Azure Artifact
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout the repo
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-
-      - name: Promote Package
-        shell: pwsh
-        run: |
-          $arguments = @{
-            PackagesURL = "${{ env.ARTIFACTS_PACKAGES_URL }}"
-            Username    = "${{ env.ARTIFACTS_USERNAME }}"
-            ViewId      = "${{ env.RELEASE_VIEW_ID }}"
-            ReleaseRef  = "${{ github.ref_name }}"
-            Password    = (ConvertTo-SecureString -String "${{ env.ARTIFACTS_API_KEY }}" -AsPlainText -Force)
-          }
-
-          Import-Module ./eng/promote-packages.psm1
-          Invoke-Promote @arguments
-
