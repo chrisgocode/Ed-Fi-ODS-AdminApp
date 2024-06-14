@@ -55,25 +55,3 @@ jobs:
 
             $page += 1
           } While ($release_list.count -gt 0)
-
-  promote-Azure-artifact:
-    name: Promote Azure Artifact
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout the repo
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-
-      - name: Promote Package
-        shell: pwsh
-        run: |
-          $arguments = @{
-            PackagesURL = "${{ env.ARTIFACTS_PACKAGES_URL }}"
-            Username    = "${{ env.ARTIFACTS_USERNAME }}"
-            ViewId      = "${{ env.RELEASE_VIEW_ID }}"
-            ReleaseRef  = "${{ github.ref_name }}"
-            Password    = (ConvertTo-SecureString -String "${{ env.ARTIFACTS_API_KEY }}" -AsPlainText -Force)
-          }
-
-          Import-Module ./eng/promote-packages.psm1
-          Invoke-Promote @arguments
-
